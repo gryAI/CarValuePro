@@ -1,5 +1,6 @@
 ### Project Structure
-===============================================================================================
+
+```plaintext
 project_root/
 ├── src/                    # Main source code for the web app, model, and data pipeline
 │   ├── app/                # Web application code
