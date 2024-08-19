@@ -1,3 +1,5 @@
 beautifulsoup4==4.12.3
 pandas==2.2.2
 selenium==4.23.1
+black==23.3.0
+isort==5.10.1
