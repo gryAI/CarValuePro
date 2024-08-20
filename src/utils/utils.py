@@ -32,7 +32,7 @@ def sort_listings(driver):
 
 def get_logger(
     name: str,
-    log_file: str = None,
+    log_file: str = "logs/applog.log",
     level=logging.DEBUG,
     output_to_console=True,
     output_to_file=True,

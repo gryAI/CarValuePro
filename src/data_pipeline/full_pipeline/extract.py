@@ -14,14 +14,13 @@ from utils.utils import (
     sort_listings,
 )
 
-log_file = get_logger(
-    "FullLoadPipeline - Extract - FO", "logs/applog.log", output_to_console=False
-)
-log_console = get_logger("FullLoadPipeline - Extract - CO", output_to_file=False)
-log_file_console = get_logger("FullLoadPipeline - Extract - FC", "logs/applog.log")
-
 
 load_dotenv()
+
+
+log_file = get_logger("FL_PIPELINE - Extract - FO", output_to_console=False)
+log_console = get_logger("FL_PIPELINE - Extract - CO", output_to_file=False)
+log_file_console = get_logger("FL_PIPELINE - Extract - FC")
 
 
 def extract(entrypoint):
