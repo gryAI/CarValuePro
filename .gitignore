@@ -1,2 +1,7 @@
 venv
 .python-version
+__pycache__/
+*.pyc
+*.pyo
+.env
+.vscode
