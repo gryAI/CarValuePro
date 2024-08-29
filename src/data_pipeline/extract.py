@@ -1,6 +1,7 @@
 import os
+import time
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pandas as pd
 import requests
@@ -9,6 +10,7 @@ from dotenv import load_dotenv
 
 from utils.utils import (
     get_logger,
+    customize_logger,
     initialize_web_browser,
     initialize_web_driver,
     sort_listings,
@@ -18,15 +20,23 @@ from utils.utils import (
 load_dotenv()
 
 
-log_file = get_logger("FL_PIPELINE - Extract - FO", output_to_console=False)
-log_console = get_logger("FL_PIPELINE - Extract - CO", output_to_file=False)
-log_file_console = get_logger("FL_PIPELINE - Extract - FC")
-
-
-def extract(entrypoint):
+def extract(entrypoint, is_incremental, to_skip=50):
     """
-    Main function to scrape data from the website and save it in the staging folder: data/raw_data
+    Scrapes data from the website and saves it in the staging folder: data/raw_data.
+
+    Args:
+        entrypoint (str): The URL of the website to scrape.
+        is_incremental (bool): Specifies whether the pipeline is full or incremental.
+        to_skip (int): Applicable only for the incremental pipeline. This variable allows
+            the scraper to skip a specified number of postings that do not match yesterday's
+            date. This is necessary because the website's sorting by recent postings may not
+            work correctly, and this ensures that all postings from yesterday are checked.
     """
+
+    log_file, log_console, log_file_console = customize_logger(
+        feature="extract", subfeature="incremental"
+    )
+
     log_file_console.info("Initializing website .....")
     driver, page_url = initialize_website()
     log_file_console.info("Website initialized .....")
@@ -35,15 +45,20 @@ def extract(entrypoint):
 
     page = 0
     car_posting = 0
-
+    skipped_postings = 0
     while True:
         page += 1
-        page_soup = get_page_soup(page_url)
+        page_soup = get_page_soup(f"{page_url}/p{page}")
 
-        # Exit point for the while loop
+        # Exit point for the while loop in full pipeline
         if page_soup.find(class_="box-no-results-search-v2"):
             log_file_console.info(f"Successfully scraped {car_posting} car postings.")
             log_file_console.info(f"No more results found after page {page}.")
+            break
+
+        # Exit point for the while loop in incremental pipeline
+        if skipped_postings >= to_skip:
+            log_file_console.info(f"Successfully scraped {car_posting} car postings.")
             break
 
         # Entry point for scraping
@@ -63,6 +78,14 @@ def extract(entrypoint):
                 )
                 additional_info = extract_additional_details(car_details_soup)
 
+                # Condition for incremental pipeline
+                if is_incremental:
+                    if is_posted_yesterday(additional_info["detail_date_posted"]):
+                        pass
+                    else:
+                        skipped_postings += 1
+                        continue
+
                 listing_info.update(additional_info)
                 new_data = pd.DataFrame([listing_info], columns=car_data.columns)
                 car_data = pd.concat([car_data, new_data], ignore_index=True)
@@ -70,16 +93,21 @@ def extract(entrypoint):
                 log_console.info(
                     f"Page: {page} | Listing no: {car_posting} | Scraped info from: {listing_info['listing_url']}"
                 )
-                break
 
-            break
-        break
+                time.sleep(0.5)
 
     time_stamp = str(datetime.now().date())
-    file_path = f"data/raw_data/initial_load_raw_data-{time_stamp}.csv"
+
+    if is_incremental:
+        file_path = (
+            f"data/raw_data/incremental/incremental_load_raw_data-{time_stamp}.csv"
+        )
+    else:
+        file_path = f"data/raw_data/full/full_load_raw_data-{time_stamp}.csv"
+
     save_data(car_data, file_path)
     log_file_console.info(f"Saved data in {file_path}")
-    log_file_console.info("Completed Successfully: Extraction Process")
+    log_file_console.info("Exiting: Extraction process completed successfully!")
 
 
 def initialize_website():
@@ -130,6 +158,16 @@ def get_page_soup(url):
 def safe_find(soup, class_name, default=""):
     element = soup.find(class_=class_name)
     return element.text if element else default
+
+
+def is_posted_yesterday(date_string):
+    date_string = date_string.replace("Posted on ", "")
+    date_obj = datetime.strptime(date_string, "%d/%m/%Y").date()
+
+    now = datetime.now().date()
+    yesterday = now - timedelta(days=1)
+
+    return date_obj == yesterday
 
 
 def extract_listing_info(soup):
@@ -203,6 +241,33 @@ def extract_additional_details(soup):
         except IndexError:
             return default
 
+    detail_features_element = soup.find(class_="list-description").find("ul")
+    detail_features = (
+        [features.text for features in detail_features_element.find_all("li")]
+        if detail_features_element
+        else []
+    )
+
+    negotiation_and_test_drive_element = soup.find(class_="list-description")
+    negotiation_and_test_drive = (
+        [
+            span.text.replace("\n", " ").replace("", "").strip()
+            for span in negotiation_and_test_drive_element.find("p")
+        ]
+        if negotiation_and_test_drive_element
+        else []
+    )
+
+    additional_services_element = soup.find(class_="box-accompanied-service")
+    additional_services = (
+        [
+            service.text.strip()
+            for service in additional_services_element.find_all(class_="text")
+        ]
+        if additional_services_element
+        else []
+    )
+
     return {
         "detail_date_posted": safe_find(soup, "date-post"),
         "detail_make": get_safe_value("icon car", 0),
@@ -213,17 +278,10 @@ def extract_additional_details(soup):
         "detail_transmission": get_safe_value("icon Transmission", 0),
         "detail_mileage": get_safe_value("icon icon-gauge", 0),
         "detail_coding": get_safe_value("icon icon-placenumber", 0),
+        "detail_features": detail_features,
         "price_and_payment_terms": extract_price_and_payment_terms(soup),
-        "negotiation_and_test_drive": [
-            span.text.replace("\n", " ").replace("", "").strip()
-            for span in soup.find(class_="list-description").find("p")
-        ],
-        "additional_services": [
-            service.text.strip()
-            for service in soup.find(class_="box-accompanied-service").find_all(
-                class_="text"
-            )
-        ],
+        "negotiation_and_test_drive": negotiation_and_test_drive,
+        "additional_services": additional_services,
         "complete_listing_description": safe_find(
             soup, "description-content product_detail_des"
         ).strip(),
@@ -237,7 +295,7 @@ def save_data(car_data, file_path):
 
 if __name__ == "__main__":
     print("|==============================|")
-    print("|         full pipeline        |")
+    print("|           pipeline           |")
     print("|              |               |")
-    print("|         extract.py           |")
+    print("|          extract.py          |")
     print("|==============================|")
