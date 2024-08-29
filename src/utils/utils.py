@@ -77,3 +77,22 @@ def get_logger(
             logger.addHandler(console_handler)
 
     return logger
+
+
+def customize_logger(feature, subfeature):
+    if feature == "extract":
+        if subfeature == "incremental":
+            log_file = get_logger("IL_PIPELINE - Extract - FO", output_to_console=False)
+            log_console = get_logger("IL_PIPELINE - Extract - CO", output_to_file=False)
+            log_file_console = get_logger("IL_PIPELINE - Extract - FC")
+
+        elif subfeature == "full":
+            log_file = get_logger("FL_PIPELINE - Extract - FO", output_to_console=False)
+            log_console = get_logger("FL_PIPELINE - Extract - CO", output_to_file=False)
+            log_file_console = get_logger("FL_PIPELINE - Extract - FC")
+
+        else:
+            print("Invalid parameters")
+            return
+
+        return log_file, log_console, log_file_console
