@@ -256,7 +256,7 @@ def extract_additional_details(soup):
         "detail_transmission": get_safe_value("icon Transmission", 0),
         "detail_mileage": get_safe_value("icon icon-gauge", 0),
         "detail_coding": get_safe_value("icon icon-placenumber", 0),
-        "detail_features": detail_features,,
+        "detail_features": detail_features,
         "negotiation_and_test_drive": negotiation_and_test_drive,
         "additional_services": additional_services,
         "complete_listing_description": safe_find(
