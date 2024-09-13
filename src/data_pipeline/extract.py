@@ -9,13 +9,12 @@ from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 
 from utils.utils import (
-    get_logger,
     customize_logger,
+    get_logger,
     initialize_web_browser,
     initialize_web_driver,
     sort_listings,
 )
-
 
 load_dotenv()
 
@@ -33,9 +32,14 @@ def extract(entrypoint, is_incremental, to_skip=50):
             work correctly, and this ensures that all postings from yesterday are checked.
     """
 
-    log_file, log_console, log_file_console = customize_logger(
-        feature="extract", subfeature="incremental"
-    )
+    if is_incremental:
+        log_file, log_console, log_file_console = customize_logger(
+            feature="extract", subfeature="incremental"
+        )
+    else:
+        log_file, log_console, log_file_console = customize_logger(
+            feature="extract", subfeature="full"
+        )
 
     log_file_console.info("Initializing website .....")
     driver, page_url = initialize_website()
@@ -96,18 +100,9 @@ def extract(entrypoint, is_incremental, to_skip=50):
 
                 time.sleep(0.5)
 
-    time_stamp = str(datetime.now().date())
-
-    if is_incremental:
-        file_path = (
-            f"data/raw_data/incremental/incremental_load_raw_data-{time_stamp}.csv"
-        )
-    else:
-        file_path = f"data/raw_data/full/full_load_raw_data-{time_stamp}.csv"
-
-    save_data(car_data, file_path)
-    log_file_console.info(f"Saved data in {file_path}")
     log_file_console.info("Exiting: Extraction process completed successfully!")
+
+    return car_data
 
 
 def initialize_website():
@@ -139,7 +134,6 @@ def initialize_df():
             "detail_mileage": [],
             "detail_coding": [],
             "detail_features": [],
-            "price_and_payment_terms": [],
             "negotiation_and_test_drive": [],
             "additional_services": [],
             "complete_listing_description": [],
@@ -209,22 +203,6 @@ def get_details_dict(soup):
     return dict(details_dict)
 
 
-def extract_price_and_payment_terms(soup):
-    """
-    Extracts price and payment term below the photo of the listing on the detail page.
-    """
-
-    list_pay_price = soup.find(class_="list-pay-price")
-    return (
-        {
-            li.find("label").text: li.find("span").text
-            for li in list_pay_price.find_all("li")
-        }
-        if list_pay_price
-        else {}
-    )
-
-
 def extract_additional_details(soup):
     """
     Extracts additional details from the details page based on details_dict and the details page soup.
@@ -278,8 +256,7 @@ def extract_additional_details(soup):
         "detail_transmission": get_safe_value("icon Transmission", 0),
         "detail_mileage": get_safe_value("icon icon-gauge", 0),
         "detail_coding": get_safe_value("icon icon-placenumber", 0),
-        "detail_features": detail_features,
-        "price_and_payment_terms": extract_price_and_payment_terms(soup),
+        "detail_features": detail_features,,
         "negotiation_and_test_drive": negotiation_and_test_drive,
         "additional_services": additional_services,
         "complete_listing_description": safe_find(
@@ -287,10 +264,6 @@ def extract_additional_details(soup):
         ).strip(),
         "detail_price": get_safe_value("price", 0),
     }
-
-
-def save_data(car_data, file_path):
-    car_data.to_csv(file_path, index=False, encoding="utf-8")
 
 
 if __name__ == "__main__":
