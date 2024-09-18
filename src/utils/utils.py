@@ -7,6 +7,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 
 
+# Extraction Common Functions
 def initialize_web_driver(path):
     chromedriver_path = path
     chrome_options = Options()
@@ -28,6 +29,9 @@ def sort_listings(driver):
     )
 
     sort_recent.click()
+
+
+# Database Connection Common Functions
 
 
 def get_logger(
@@ -91,8 +95,26 @@ def customize_logger(feature, subfeature):
             log_console = get_logger("FL_PIPELINE - Extract - CO", output_to_file=False)
             log_file_console = get_logger("FL_PIPELINE - Extract - FC")
 
-        else:
-            print("Invalid parameters")
-            return
+    elif feature == "transform":
+        if subfeature == "incremental":
+            log_file = get_logger(
+                "IL_PIPELINE - Transform - FO", output_to_console=False
+            )
+            log_console = get_logger(
+                "IL_PIPELINE - Transform - CO", output_to_file=False
+            )
+            log_file_console = get_logger("IL_PIPELINE - Transform - FC")
 
-        return log_file, log_console, log_file_console
+        elif subfeature == "full":
+            log_file = get_logger(
+                "FL_PIPELINE - Transform - FO", output_to_console=False
+            )
+            log_console = get_logger(
+                "FL_PIPELINE - Transform - CO", output_to_file=False
+            )
+            log_file_console = get_logger("FL_PIPELINE - Transform - FC")
+
+    else:
+        print("Invalid parameters")
+
+    return log_file, log_console, log_file_console
