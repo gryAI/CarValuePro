@@ -44,11 +44,5 @@ def run_pipeline(entrypoint, is_incremental=True, to_skip=500):
 
 
 if __name__ == "__main__":
-    # data = extract(entrypoint, is_incremental=True, to_skip=200)
-    # time_stamp = str(datetime.now().date()).replace("-", "")
-    # TBL_NAME = f"raw_incremental_load_{time_stamp}"
-    # extract_to_staging(
-    #     DB_NAME="CVP_FINAL", TBL_NAME=TBL_NAME, data=data, is_incremental=True
-    # )
 
     run_pipeline(entrypoint=entrypoint, is_incremental=True, to_skip=500)
