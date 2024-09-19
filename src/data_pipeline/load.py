@@ -1,12 +1,14 @@
 import os
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 
 import pandas as pd
 import psycopg2
-from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, inspect, text
 
+from utils.db_utils import create_db_engine
+from utils.msc_utils import customize_logger
 
 load_dotenv()
 
@@ -14,68 +16,90 @@ load_dotenv()
 def extract_to_staging(
     DB_NAME: str, TBL_NAME: str, data: pd.DataFrame, is_incremental: bool
 ):
+    # Load loggers
+    if is_incremental:
+        log_file, log_console, log_file_console = customize_logger(
+            feature="load", subfeature="incremental"
+        )
+    else:
+        log_file, log_console, log_file_console = customize_logger(
+            feature="load", subfeature="full"
+        )
+
+    # Entry point for the extract to staging function
+
+    log_file_console.info(f"Initiating: Loading process to {DB_NAME.upper()} DATABASE.")
+    time_stamp = str(datetime.now().date()).replace("-", "")
     engine = create_db_engine(DB_NAME)
 
     exists = check_table_exists(engine, TBL_NAME)
     if not exists:
         create_staging_table(engine, TBL_NAME)
+        log_file_console.info(
+            f"Staging Database Table {TBL_NAME.upper()} has been created successfully."
+        )
 
     load_to_staging_table(engine, data, TBL_NAME)
 
-    time_stamp = str(datetime.now().date()).replace("-", "")
-    print(f"Incremental data for {time_stamp} has been loaded successfully!")
+    if is_incremental:
+        log_file_console.info(
+            f"Exiting: Incremental data for {time_stamp} has been loaded to {TBL_NAME.upper()} TABLE in {DB_NAME.upper()} DATABASE successfully!"
+        )
+    else:
+        log_file_console.info(
+            f"Exiting: Full data as of {time_stamp} has been loaded to {TBL_NAME.upper()} TABLE in {DB_NAME.upper()} DATABASE successfully!"
+        )
 
 
 def transform_to_prod(
     DB_NAME: str, TBL_NAME: str, data: pd.DataFrame, is_incremental: bool
 ):
+    # Load loggers
+    if is_incremental:
+        log_file, log_console, log_file_console = customize_logger(
+            feature="load", subfeature="incremental"
+        )
+    else:
+        log_file, log_console, log_file_console = customize_logger(
+            feature="load", subfeature="full"
+        )
+
+    # Entry point for the transform to production function
+
+    log_file_console.info(f"Initiating: Loading process to {DB_NAME.upper()} DATABASE.")
+    time_stamp = str(datetime.now().date()).replace("-", "")
     engine = create_db_engine(DB_NAME)
 
     exists = check_table_exists(engine, TBL_NAME)
-    print(exists)
 
     if not exists:
         create_prod_table(engine, TBL_NAME)
+        log_file_console.info(
+            f"Production Database Table {TBL_NAME.upper()} has been created successfully."
+        )
 
     if is_incremental:
-        print("HERE!!!")
         load_to_prod_table(engine, data, TBL_NAME)
+        log_file_console.info(
+            f"Incremental data for {time_stamp} has been loaded to {TBL_NAME.upper()} TABLE in {DB_NAME.upper()} DATABASE successfully!"
+        )
 
     else:
         if exists:
             archive_prod_table(engine, TBL_NAME)
+            log_file_console.info(
+                f"Production Database Table {TBL_NAME.upper()} in {DB_NAME.upper()} DATABASE has been archived successfully!"
+            )
+
             create_prod_table(engine, TBL_NAME)
+            log_file_console.info(
+                f"Production Database Table {TBL_NAME.upper()} has been created successfully."
+            )
 
         load_to_prod_table(engine, data, TBL_NAME)
-
-    print("Loaded to PRD!")
-
-
-@dataclass
-class DBSecrets:
-    DB_USER: str
-    DB_PASS: str
-    DB_HOST: str
-    DB_PORT: str
-
-
-def get_db_creds():
-    DB_USER = os.getenv("DB_USER")
-    DB_PASS = os.getenv("DB_PASS")
-    DB_HOST = os.getenv("DB_HOST")
-    DB_PORT = os.getenv("DB_PORT")
-
-    return DBSecrets(DB_USER, DB_PASS, DB_HOST, DB_PORT)
-
-
-def create_db_engine(DB_NAME: str):
-    secrets = get_db_creds()
-
-    engine = create_engine(
-        f"postgresql+psycopg2://{secrets.DB_USER}:{secrets.DB_PASS}@{secrets.DB_HOST}:{secrets.DB_PORT}/{DB_NAME}"
-    )
-
-    return engine
+        log_file_console.info(
+            f"Exiting: Full data as of {time_stamp} has been loaded to {TBL_NAME.upper()} TABLE in {DB_NAME.upper()} DATABASE successfully!"
+        )
 
 
 def check_table_exists(engine, TBL_NAME):
@@ -87,7 +111,6 @@ def check_table_exists(engine, TBL_NAME):
 
 
 def create_staging_table(engine, TBL_NAME):
-
     query = f"""
     CREATE TABLE {TBL_NAME} (
         listing_id VARCHAR(10),
@@ -118,11 +141,8 @@ def create_staging_table(engine, TBL_NAME):
         connection.execute(text(query))
         connection.commit()
 
-    print(f"Staging Table '{TBL_NAME}' created successfully.")
-
 
 def create_prod_table(engine, TBL_NAME):
-
     query = f"""
     CREATE TABLE {TBL_NAME} (
         listing_id VARCHAR(10),
@@ -152,7 +172,7 @@ def create_prod_table(engine, TBL_NAME):
         connection.execute(text(query))
         connection.commit()
 
-    print(f"Production Table '{TBL_NAME}' created successfully.")
+    # print(f"Production Table '{TBL_NAME}' created successfully.")
 
 
 def archive_prod_table(engine, TBL_NAME):
@@ -168,18 +188,18 @@ def archive_prod_table(engine, TBL_NAME):
         connection.execute(text(query))
         connection.commit()
 
-    print(f"Production data as of {yesterday} has been archived successfully!")
+    # print(f"Production data as of {yesterday} has been archived successfully!")
 
 
 def load_to_staging_table(engine, data, TBL_NAME):
     time_stamp = str(datetime.now().date()).replace("-", "")
     data.to_sql(TBL_NAME, engine, if_exists="replace", index=False)
 
-    print(f"Incremental data for {time_stamp} has been loaded successfully!")
+    # print(f"Incremental data for {time_stamp} has been loaded successfully!")
 
 
 def load_to_prod_table(engine, data, TBL_NAME):
     time_stamp = str(datetime.now().date()).replace("-", "")
     data.to_sql(TBL_NAME, engine, if_exists="append", index=False)
 
-    print(f"Incremental data for {time_stamp} has been loaded successfully!")
+    # print(f"Incremental data for {time_stamp} has been loaded successfully!")
