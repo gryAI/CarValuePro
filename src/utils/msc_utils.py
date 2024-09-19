@@ -31,9 +31,7 @@ def sort_listings(driver):
     sort_recent.click()
 
 
-# Database Connection Common Functions
-
-
+# Logging Functions
 def get_logger(
     name: str,
     log_file: str = "logs/applog.log",
@@ -113,6 +111,17 @@ def customize_logger(feature, subfeature):
                 "FL_PIPELINE - Transform - CO", output_to_file=False
             )
             log_file_console = get_logger("FL_PIPELINE - Transform - FC")
+
+    elif feature == "load":
+        if subfeature == "incremental":
+            log_file = get_logger("IL_PIPELINE - Load - FO", output_to_console=False)
+            log_console = get_logger("IL_PIPELINE - Load - CO", output_to_file=False)
+            log_file_console = get_logger("IL_PIPELINE - Load - FC")
+
+        elif subfeature == "full":
+            log_file = get_logger("FL_PIPELINE - Load - FO", output_to_console=False)
+            log_console = get_logger("FL_PIPELINE - Load - CO", output_to_file=False)
+            log_file_console = get_logger("FL_PIPELINE - Load - FC")
 
     else:
         print("Invalid parameters")
