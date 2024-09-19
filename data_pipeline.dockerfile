@@ -1,5 +1,5 @@
 # Base image
-FROM python:3.12
+FROM python:3.12.0
 
 # Install curl, unzip, and other necessary dependencies
 RUN apt-get update && apt-get install -y curl unzip
@@ -13,7 +13,7 @@ RUN LATEST_DRIVER=$(curl -sS https://chromedriver.storage.googleapis.com/LATEST_
     rm chromedriver_linux64.zip
 
 # Set environment variables
-ENV PYTHONPATH="/app/src"
+ENV PYTHONPATH="/project/src"
 
 # Set the working directory
 WORKDIR /project
