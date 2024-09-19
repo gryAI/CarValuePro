@@ -4,14 +4,14 @@ import os
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
 
 
 # Extraction Common Functions
 def initialize_web_driver(path):
-    chromedriver_path = path
     chrome_options = Options()
-    service = Service(chromedriver_path)
+    service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service, options=chrome_options)
 
     return driver
