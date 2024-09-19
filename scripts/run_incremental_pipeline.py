@@ -11,6 +11,7 @@ from data_pipeline.load import (
     check_table_exists,
     create_staging_table,
     extract_to_staging,
+    transform_to_prod,
 )
 
 load_dotenv()
@@ -24,7 +25,9 @@ def run_pipeline(entrypoint, is_incremental=True, to_skip=500):
     # Define Static Inputs
     ui_time_stamp = str(datetime.now().date()).replace("-", "")
     ui_DB_NAME_STG = "staging"
-    ui_TBL_NAME = f"raw_incremental_load_{ui_time_stamp}"
+    ui_DB_NAME_PRD = "production"
+    ui_TBL_NAME_STG = f"raw_incremental_load_{ui_time_stamp}"
+    ui_TBL_NAME_PRD = f"vehicle_data_prd"
 
     # Extract listings from website
     data = extract(entrypoint, is_incremental=is_incremental, to_skip=to_skip)
@@ -32,17 +35,22 @@ def run_pipeline(entrypoint, is_incremental=True, to_skip=500):
     # Load extracted data to the staging table in PostgreSQL
     extract_to_staging(
         DB_NAME=ui_DB_NAME_STG,
-        TBL_NAME=ui_TBL_NAME,
+        TBL_NAME=ui_TBL_NAME_STG,
         data=data,
         is_incremental=is_incremental,
     )
 
     # Transform the data loaded into the staging table
-    transform(
-        DB_NAME=ui_DB_NAME_STG, TBL_NAME=ui_TBL_NAME, is_incremental=is_incremental
+    data = transform(
+        DB_NAME=ui_DB_NAME_STG, TBL_NAME=ui_TBL_NAME_STG, is_incremental=is_incremental
+    )
+
+    # Load to production table
+    transform_to_prod(
+        DB_NAME=ui_DB_NAME_PRD, TBL_NAME=ui_TBL_NAME_PRD, data=data, is_incremental=True
     )
 
 
 if __name__ == "__main__":
 
-    run_pipeline(entrypoint=entrypoint, is_incremental=True, to_skip=500)
+    run_pipeline(entrypoint=entrypoint, is_incremental=True, to_skip=50)

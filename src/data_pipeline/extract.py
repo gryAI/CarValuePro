@@ -54,7 +54,7 @@ def extract(entrypoint, is_incremental, to_skip=50):
         page += 1
         page_soup = get_page_soup(f"{page_url}/p{page}")
 
-        # Exit point for the while loop in full pipeline
+        # Exit point 2 for the while loop in full pipeline
         if page_soup.find(class_="box-no-results-search-v2"):
             log_file_console.info(f"Successfully scraped {car_posting} car postings.")
             log_file_console.info(f"No more results found after page {page}.")
@@ -99,6 +99,10 @@ def extract(entrypoint, is_incremental, to_skip=50):
                 )
 
                 time.sleep(0.5)
+
+            # Exit point 1 for the while loop in full pipeline
+            if listing_info["listing_title"] == "":
+                break
 
     log_file_console.info("Exiting: Extraction process completed successfully!")
 

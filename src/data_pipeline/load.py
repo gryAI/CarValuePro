@@ -26,8 +26,29 @@ def extract_to_staging(
     print(f"Incremental data for {time_stamp} has been loaded successfully!")
 
 
-def transform_to_prod():
-    pass
+def transform_to_prod(
+    DB_NAME: str, TBL_NAME: str, data: pd.DataFrame, is_incremental: bool
+):
+    engine = create_db_engine(DB_NAME)
+
+    exists = check_table_exists(engine, TBL_NAME)
+    print(exists)
+
+    if not exists:
+        create_prod_table(engine, TBL_NAME)
+
+    if is_incremental:
+        print("HERE!!!")
+        load_to_prod_table(engine, data, TBL_NAME)
+
+    else:
+        if exists:
+            archive_prod_table(engine, TBL_NAME)
+            create_prod_table(engine, TBL_NAME)
+
+        load_to_prod_table(engine, data, TBL_NAME)
+
+    print("Loaded to PRD!")
 
 
 @dataclass
@@ -78,6 +99,7 @@ def create_staging_table(engine, TBL_NAME):
         detail_date_posted VARCHAR(50),
         detail_make VARCHAR(50),
         detail_model VARCHAR(50),
+        detail_year VARCHAR(4),
         detail_status VARCHAR(10),
         detail_color VARCHAR(20),
         detail_transmission VARCHAR(50),
@@ -111,15 +133,16 @@ def create_prod_table(engine, TBL_NAME):
         detail_date_posted DATE,
         detail_make VARCHAR(50),
         detail_model VARCHAR(50),
+        detail_year VARCHAR(4),
         detail_status VARCHAR(10),
         detail_color VARCHAR(20),
         detail_transmission VARCHAR(50),
         detail_mileage INT,
         detail_coding VARCHAR(20),
-        detail_features VARCHAR(100),
+        detail_features VARCHAR(1000),
         detail_price INT,
-        additional_services VARCHAR(100),
-        negotiation_and_test_drive VARCHAR(100),
+        additional_services VARCHAR(1000),
+        negotiation_and_test_drive VARCHAR(1000),
         complete_listing_description VARCHAR(1000000)
         
     )
@@ -132,20 +155,31 @@ def create_prod_table(engine, TBL_NAME):
     print(f"Production Table '{TBL_NAME}' created successfully.")
 
 
-def archive_prod_table(engine):
+def archive_prod_table(engine, TBL_NAME):
     now = datetime.now().date()
     yesterday = str(now - timedelta(days=1)).replace("-", "_")
 
-    old_TBL_NAME = "car_data_production"
-    new_TBL_NAME = "car_data_production_as_of_{yesterday}"
+    old_TBL_NAME = TBL_NAME
+    new_TBL_NAME = f"{TBL_NAME}_as_of_{yesterday}"
 
     query = f"ALTER TABLE {old_TBL_NAME} RENAME TO {new_TBL_NAME};"
 
-    print(f"Production data as of {yesterday} has been archive successfully!")
+    with engine.connect() as connection:
+        connection.execute(text(query))
+        connection.commit()
+
+    print(f"Production data as of {yesterday} has been archived successfully!")
 
 
 def load_to_staging_table(engine, data, TBL_NAME):
     time_stamp = str(datetime.now().date()).replace("-", "")
     data.to_sql(TBL_NAME, engine, if_exists="replace", index=False)
+
+    print(f"Incremental data for {time_stamp} has been loaded successfully!")
+
+
+def load_to_prod_table(engine, data, TBL_NAME):
+    time_stamp = str(datetime.now().date()).replace("-", "")
+    data.to_sql(TBL_NAME, engine, if_exists="append", index=False)
 
     print(f"Incremental data for {time_stamp} has been loaded successfully!")

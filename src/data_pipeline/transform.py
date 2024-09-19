@@ -58,8 +58,7 @@ def transform(DB_NAME, TBL_NAME: str, is_incremental: bool):
     drop_cols = ["listing_price"]
     data = drop_columns(data, drop_cols)
 
-    # Save data
-    save_data(data)
+    return data
 
 
 def remove_words(text: str, words: list):
