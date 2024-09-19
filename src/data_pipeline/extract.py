@@ -18,7 +18,7 @@ from utils.msc_utils import (
 load_dotenv()
 
 
-def extract(entrypoint, is_incremental, to_skip):
+def extract(entrypoint, is_incremental, to_skip = 0):
     """
     Scrapes data from the website and saves it in the staging folder: data/raw_data.
 
