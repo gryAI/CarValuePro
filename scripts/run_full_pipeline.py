@@ -1,18 +1,12 @@
 import os
+from datetime import datetime, timedelta
 
 from dotenv import load_dotenv
-from datetime import datetime, timedelta
 
 from data_pipeline.extract import extract
 from data_pipeline.transform import transform
-from data_pipeline.load import (
-    get_db_creds,
-    create_db_engine,
-    check_table_exists,
-    create_staging_table,
-    extract_to_staging,
-    transform_to_prod,
-)
+from data_pipeline.load import extract_to_staging, transform_to_prod
+
 
 load_dotenv()
 
@@ -21,7 +15,6 @@ entrypoint = os.getenv("CHROMEBROWSER_URL_ENTRY")
 
 
 def run_pipeline(entrypoint, is_incremental=False):
-
     # Define Static Inputs
     ui_time_stamp = str(datetime.now().date()).replace("-", "")
     ui_DB_NAME_STG = "staging"
@@ -55,5 +48,4 @@ def run_pipeline(entrypoint, is_incremental=False):
 
 
 if __name__ == "__main__":
-
     run_pipeline(entrypoint=entrypoint, is_incremental=False)
