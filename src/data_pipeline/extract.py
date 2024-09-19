@@ -8,9 +8,8 @@ import requests
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 
-from utils.utils import (
+from utils.msc_utils import (
     customize_logger,
-    get_logger,
     initialize_web_browser,
     initialize_web_driver,
     sort_listings,
@@ -19,7 +18,7 @@ from utils.utils import (
 load_dotenv()
 
 
-def extract(entrypoint, is_incremental, to_skip=50):
+def extract(entrypoint, is_incremental, to_skip):
     """
     Scrapes data from the website and saves it in the staging folder: data/raw_data.
 
@@ -102,6 +101,10 @@ def extract(entrypoint, is_incremental, to_skip=50):
 
             # Exit point 1 for the while loop in full pipeline
             if listing_info["listing_title"] == "":
+                log_file_console.info(
+                    f"Successfully scraped {car_posting} car postings."
+                )
+                log_file_console.info(f"No more results found after page {page}.")
                 break
 
     log_file_console.info("Exiting: Extraction process completed successfully!")
