@@ -32,17 +32,17 @@ def extract(entrypoint, is_incremental, to_skip = 0):
     """
 
     if is_incremental:
-        log_file, log_console, log_file_console = customize_logger(
+        log_console = customize_logger(
             feature="extract", subfeature="incremental"
         )
     else:
-        log_file, log_console, log_file_console = customize_logger(
+        log_console = customize_logger(
             feature="extract", subfeature="full"
         )
 
-    log_file_console.info("Initializing website .....")
+    log_console.info("Initializing website .....")
     driver, page_url = initialize_website()
-    log_file_console.info("Website initialized .....")
+    log_console.info("Website initialized .....")
 
     car_data = initialize_df()
 
@@ -55,13 +55,13 @@ def extract(entrypoint, is_incremental, to_skip = 0):
 
         # Exit point 2 for the while loop in full pipeline
         if page_soup.find(class_="box-no-results-search-v2"):
-            log_file_console.info(f"Successfully scraped {car_posting} car postings.")
-            log_file_console.info(f"No more results found after page {page}.")
+            log_console.info(f"Successfully scraped {car_posting} car postings.")
+            log_console.info(f"No more results found after page {page}.")
             break
 
         # Exit point for the while loop in incremental pipeline
         if skipped_postings >= to_skip:
-            log_file_console.info(f"Successfully scraped {car_posting} car postings.")
+            log_console.info(f"Successfully scraped {car_posting} car postings.")
             break
 
         # Entry point for scraping
@@ -101,13 +101,13 @@ def extract(entrypoint, is_incremental, to_skip = 0):
 
             # Exit point 1 for the while loop in full pipeline
             if listing_info["listing_title"] == "":
-                log_file_console.info(
+                log_console.info(
                     f"Successfully scraped {car_posting} car postings."
                 )
-                log_file_console.info(f"No more results found after page {page}.")
+                log_console.info(f"No more results found after page {page}.")
                 break
 
-    log_file_console.info("Exiting: Extraction process completed successfully!")
+    log_console.info("Exiting: Extraction process completed successfully!")
 
     return car_data
 

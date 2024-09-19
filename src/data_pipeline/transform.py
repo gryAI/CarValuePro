@@ -17,17 +17,17 @@ load_dotenv()
 def transform(DB_NAME, TBL_NAME: str, is_incremental: bool):
     # Load loggers
     if is_incremental:
-        log_file, log_console, log_file_console = customize_logger(
+        log_console = customize_logger(
             feature="transform", subfeature="incremental"
         )
     else:
-        log_file, log_console, log_file_console = customize_logger(
+        log_console = customize_logger(
             feature="transform", subfeature="full"
         )
 
     # Load data
 
-    log_file_console.info("Initiating: Transformation process.")
+    log_console.info("Initiating: Transformation process.")
 
     engine = create_db_engine(DB_NAME)
     query = f"SELECT * FROM {TBL_NAME};"
@@ -60,7 +60,7 @@ def transform(DB_NAME, TBL_NAME: str, is_incremental: bool):
     drop_cols = ["listing_price"]
     data = drop_columns(data, drop_cols)
 
-    log_file_console.info("Exiting: Transformation process completed successfully!")
+    log_console.info("Exiting: Transformation process completed successfully!")
 
     return data
 
