@@ -1,6 +1,9 @@
 # Base image
 FROM python:3.12.0
 
+# Set USER to ROOT
+USER root
+
 # Install curl, unzip, and other necessary dependencies
 RUN apt-get update && apt-get install -y curl unzip
 
