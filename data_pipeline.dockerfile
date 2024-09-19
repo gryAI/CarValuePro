@@ -24,6 +24,10 @@ COPY . .
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Run your Python script
+# Ensure correct permissions for the logs directory
+RUN mkdir -p /project/logs && \
+    chmod 777 /project/logs
+
+# Set the default command to run your Python script
 ENTRYPOINT ["echo"]
 CMD ["Data Pipeline Ready!"]
