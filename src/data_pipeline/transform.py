@@ -8,14 +8,13 @@ import pandas as pd
 from cleantext import clean
 from dotenv import load_dotenv
 
-from utils.utils import get_logger, customize_logger
-from data_pipeline.load import get_db_creds, create_db_engine
+from utils.db_utils import create_db_engine, get_db_creds
+from utils.msc_utils import customize_logger, get_logger
 
 load_dotenv()
 
 
 def transform(DB_NAME, TBL_NAME: str, is_incremental: bool):
-
     # Load loggers
     if is_incremental:
         log_file, log_console, log_file_console = customize_logger(
@@ -27,6 +26,9 @@ def transform(DB_NAME, TBL_NAME: str, is_incremental: bool):
         )
 
     # Load data
+
+    log_file_console.info("Initiating: Transformation process.")
+
     engine = create_db_engine(DB_NAME)
     query = f"SELECT * FROM {TBL_NAME};"
     data = pd.read_sql(query, engine)
@@ -57,6 +59,8 @@ def transform(DB_NAME, TBL_NAME: str, is_incremental: bool):
 
     drop_cols = ["listing_price"]
     data = drop_columns(data, drop_cols)
+
+    log_file_console.info("Exiting: Transformation process completed successfully!")
 
     return data
 
