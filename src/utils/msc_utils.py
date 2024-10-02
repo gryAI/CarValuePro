@@ -11,6 +11,21 @@ from selenium.webdriver.common.by import By
 # Extraction Common Functions
 def initialize_web_driver(path):
     chrome_options = Options()
+    chrome_options.add_argument("--headless")  # Ensure Chrome runs headless
+    chrome_options.add_argument("--no-sandbox")  # Bypass OS security model
+    chrome_options.add_argument(
+        "--disable-dev-shm-usage"
+    )  # Overcome limited resource issues
+    chrome_options.add_argument("--disable-gpu")  # Disable GPU usage for simplicity
+    chrome_options.add_argument("--window-size=1920x1080")  # Set screen size
+    chrome_options.add_argument(
+        "--remote-debugging-port=9222"
+    )  # Enable remote debugging
+    chrome_options.add_argument("--disable-extensions")  # Disable extensions
+    chrome_options.add_argument(
+        "--disable-dev-shm-usage"
+    )  # Overcome shared memory issues
+
     service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service, options=chrome_options)
 
@@ -18,6 +33,7 @@ def initialize_web_driver(path):
 
 
 def initialize_web_browser(driver, url):
+
     driver.get(url)
 
     return driver
@@ -58,18 +74,6 @@ def get_logger(
         formatter = logging.Formatter(
             "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
         )
-
-        # Optionally add a file handler
-        # if output_to_file and log_file:
-        #     # Ensure the log directory exists
-        #     log_dir = os.path.dirname(log_file)
-        #     if not os.path.exists(log_dir):
-        #         os.makedirs(log_dir)
-
-        #     file_handler = logging.FileHandler(log_file)
-        #     file_handler.setLevel(level)
-        #     file_handler.setFormatter(formatter)
-        #     logger.addHandler(file_handler)
 
         # Optionally add a console handler
         if output_to_console:
