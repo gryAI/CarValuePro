@@ -3,7 +3,6 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 
 import pandas as pd
-import psycopg2
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, inspect, text
 
@@ -52,13 +51,9 @@ def transform_to_prod(
 ):
     # Load loggers
     if is_incremental:
-        log_file, log_console, log_console = customize_logger(
-            feature="load", subfeature="incremental"
-        )
+        log_console = customize_logger(feature="load", subfeature="incremental")
     else:
-        log_file, log_console, log_console = customize_logger(
-            feature="load", subfeature="full"
-        )
+        log_console = customize_logger(feature="load", subfeature="full")
 
     # Entry point for the transform to production function
 
