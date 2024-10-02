@@ -18,7 +18,7 @@ from utils.msc_utils import (
 load_dotenv()
 
 
-def extract(entrypoint, is_incremental, to_skip = 0):
+def extract(entrypoint, is_incremental, to_skip=500):
     """
     Scrapes data from the website and saves it in the staging folder: data/raw_data.
 
@@ -32,13 +32,9 @@ def extract(entrypoint, is_incremental, to_skip = 0):
     """
 
     if is_incremental:
-        log_console = customize_logger(
-            feature="extract", subfeature="incremental"
-        )
+        log_console = customize_logger(feature="extract", subfeature="incremental")
     else:
-        log_console = customize_logger(
-            feature="extract", subfeature="full"
-        )
+        log_console = customize_logger(feature="extract", subfeature="full")
 
     log_console.info("Initializing website .....")
     driver, page_url = initialize_website()
@@ -62,6 +58,7 @@ def extract(entrypoint, is_incremental, to_skip = 0):
         # Exit point for the while loop in incremental pipeline
         if skipped_postings >= to_skip:
             log_console.info(f"Successfully scraped {car_posting} car postings.")
+            log_console.info(f"No more results found after page {page}.")
             break
 
         # Entry point for scraping
@@ -101,11 +98,7 @@ def extract(entrypoint, is_incremental, to_skip = 0):
 
             # Exit point 1 for the while loop in full pipeline
             if listing_info["listing_title"] == "":
-                log_console.info(
-                    f"Successfully scraped {car_posting} car postings."
-                )
-                log_console.info(f"No more results found after page {page}.")
-                break
+                skipped_postings += 1
 
     log_console.info("Exiting: Extraction process completed successfully!")
 
