@@ -3,7 +3,6 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 
 import pandas as pd
-import psycopg2
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, inspect, text
 
@@ -18,35 +17,31 @@ def extract_to_staging(
 ):
     # Load loggers
     if is_incremental:
-        log_file, log_console, log_file_console = customize_logger(
-            feature="load", subfeature="incremental"
-        )
+        log_console = customize_logger(feature="load", subfeature="incremental")
     else:
-        log_file, log_console, log_file_console = customize_logger(
-            feature="load", subfeature="full"
-        )
+        log_console = customize_logger(feature="load", subfeature="full")
 
     # Entry point for the extract to staging function
 
-    log_file_console.info(f"Initiating: Loading process to {DB_NAME.upper()} DATABASE.")
+    log_console.info(f"Initiating: Loading process to {DB_NAME.upper()} DATABASE.")
     time_stamp = str(datetime.now().date()).replace("-", "")
     engine = create_db_engine(DB_NAME)
 
     exists = check_table_exists(engine, TBL_NAME)
     if not exists:
         create_staging_table(engine, TBL_NAME)
-        log_file_console.info(
+        log_console.info(
             f"Staging Database Table {TBL_NAME.upper()} has been created successfully."
         )
 
     load_to_staging_table(engine, data, TBL_NAME)
 
     if is_incremental:
-        log_file_console.info(
+        log_console.info(
             f"Exiting: Incremental data for {time_stamp} has been loaded to {TBL_NAME.upper()} TABLE in {DB_NAME.upper()} DATABASE successfully!"
         )
     else:
-        log_file_console.info(
+        log_console.info(
             f"Exiting: Full data as of {time_stamp} has been loaded to {TBL_NAME.upper()} TABLE in {DB_NAME.upper()} DATABASE successfully!"
         )
 
@@ -56,17 +51,13 @@ def transform_to_prod(
 ):
     # Load loggers
     if is_incremental:
-        log_file, log_console, log_file_console = customize_logger(
-            feature="load", subfeature="incremental"
-        )
+        log_console = customize_logger(feature="load", subfeature="incremental")
     else:
-        log_file, log_console, log_file_console = customize_logger(
-            feature="load", subfeature="full"
-        )
+        log_console = customize_logger(feature="load", subfeature="full")
 
     # Entry point for the transform to production function
 
-    log_file_console.info(f"Initiating: Loading process to {DB_NAME.upper()} DATABASE.")
+    log_console.info(f"Initiating: Loading process to {DB_NAME.upper()} DATABASE.")
     time_stamp = str(datetime.now().date()).replace("-", "")
     engine = create_db_engine(DB_NAME)
 
@@ -74,30 +65,30 @@ def transform_to_prod(
 
     if not exists:
         create_prod_table(engine, TBL_NAME)
-        log_file_console.info(
+        log_console.info(
             f"Production Database Table {TBL_NAME.upper()} has been created successfully."
         )
 
     if is_incremental:
         load_to_prod_table(engine, data, TBL_NAME)
-        log_file_console.info(
+        log_console.info(
             f"Incremental data for {time_stamp} has been loaded to {TBL_NAME.upper()} TABLE in {DB_NAME.upper()} DATABASE successfully!"
         )
 
     else:
         if exists:
             archive_prod_table(engine, TBL_NAME)
-            log_file_console.info(
+            log_console.info(
                 f"Production Database Table {TBL_NAME.upper()} in {DB_NAME.upper()} DATABASE has been archived successfully!"
             )
 
             create_prod_table(engine, TBL_NAME)
-            log_file_console.info(
+            log_console.info(
                 f"Production Database Table {TBL_NAME.upper()} has been created successfully."
             )
 
         load_to_prod_table(engine, data, TBL_NAME)
-        log_file_console.info(
+        log_console.info(
             f"Exiting: Full data as of {time_stamp} has been loaded to {TBL_NAME.upper()} TABLE in {DB_NAME.upper()} DATABASE successfully!"
         )
 

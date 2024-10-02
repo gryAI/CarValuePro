@@ -11,6 +11,21 @@ from selenium.webdriver.common.by import By
 # Extraction Common Functions
 def initialize_web_driver(path):
     chrome_options = Options()
+    chrome_options.add_argument("--headless")  # Ensure Chrome runs headless
+    chrome_options.add_argument("--no-sandbox")  # Bypass OS security model
+    chrome_options.add_argument(
+        "--disable-dev-shm-usage"
+    )  # Overcome limited resource issues
+    chrome_options.add_argument("--disable-gpu")  # Disable GPU usage for simplicity
+    chrome_options.add_argument("--window-size=1920x1080")  # Set screen size
+    chrome_options.add_argument(
+        "--remote-debugging-port=9222"
+    )  # Enable remote debugging
+    chrome_options.add_argument("--disable-extensions")  # Disable extensions
+    chrome_options.add_argument(
+        "--disable-dev-shm-usage"
+    )  # Overcome shared memory issues
+
     service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service, options=chrome_options)
 
@@ -18,6 +33,7 @@ def initialize_web_driver(path):
 
 
 def initialize_web_browser(driver, url):
+
     driver.get(url)
 
     return driver
@@ -59,18 +75,6 @@ def get_logger(
             "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
         )
 
-        # Optionally add a file handler
-        if output_to_file and log_file:
-            # Ensure the log directory exists
-            log_dir = os.path.dirname(log_file)
-            if not os.path.exists(log_dir):
-                os.makedirs(log_dir)
-
-            file_handler = logging.FileHandler(log_file)
-            file_handler.setLevel(level)
-            file_handler.setFormatter(formatter)
-            logger.addHandler(file_handler)
-
         # Optionally add a console handler
         if output_to_console:
             console_handler = logging.StreamHandler()
@@ -84,46 +88,47 @@ def get_logger(
 def customize_logger(feature, subfeature):
     if feature == "extract":
         if subfeature == "incremental":
-            log_file = get_logger("IL_PIPELINE - Extract - FO", output_to_console=False)
+            # log_file = get_logger("IL_PIPELINE - Extract - FO", output_to_console=False)
             log_console = get_logger("IL_PIPELINE - Extract - CO", output_to_file=False)
-            log_file_console = get_logger("IL_PIPELINE - Extract - FC")
+            # log_file_console = get_logger("IL_PIPELINE - Extract - FC")
 
         elif subfeature == "full":
-            log_file = get_logger("FL_PIPELINE - Extract - FO", output_to_console=False)
+            # log_file = get_logger("FL_PIPELINE - Extract - FO", output_to_console=False)
             log_console = get_logger("FL_PIPELINE - Extract - CO", output_to_file=False)
-            log_file_console = get_logger("FL_PIPELINE - Extract - FC")
+            # log_file_console = get_logger("FL_PIPELINE - Extract - FC")
 
     elif feature == "transform":
         if subfeature == "incremental":
-            log_file = get_logger(
-                "IL_PIPELINE - Transform - FO", output_to_console=False
-            )
+            # log_file = get_logger(
+            #     "IL_PIPELINE - Transform - FO", output_to_console=False
+            # )
             log_console = get_logger(
                 "IL_PIPELINE - Transform - CO", output_to_file=False
             )
-            log_file_console = get_logger("IL_PIPELINE - Transform - FC")
+            # log_file_console = get_logger("IL_PIPELINE - Transform - FC")
 
         elif subfeature == "full":
-            log_file = get_logger(
-                "FL_PIPELINE - Transform - FO", output_to_console=False
-            )
+            # log_file = get_logger(
+            #     "FL_PIPELINE - Transform - FO", output_to_console=False
+            # )
             log_console = get_logger(
                 "FL_PIPELINE - Transform - CO", output_to_file=False
             )
-            log_file_console = get_logger("FL_PIPELINE - Transform - FC")
+            # log_file_console = get_logger("FL_PIPELINE - Transform - FC")
 
     elif feature == "load":
         if subfeature == "incremental":
-            log_file = get_logger("IL_PIPELINE - Load - FO", output_to_console=False)
+            # log_file = get_logger("IL_PIPELINE - Load - FO", output_to_console=False)
             log_console = get_logger("IL_PIPELINE - Load - CO", output_to_file=False)
-            log_file_console = get_logger("IL_PIPELINE - Load - FC")
+            # log_file_console = get_logger("IL_PIPELINE - Load - FC")
 
         elif subfeature == "full":
-            log_file = get_logger("FL_PIPELINE - Load - FO", output_to_console=False)
+            # log_file = get_logger("FL_PIPELINE - Load - FO", output_to_console=False)
             log_console = get_logger("FL_PIPELINE - Load - CO", output_to_file=False)
-            log_file_console = get_logger("FL_PIPELINE - Load - FC")
+            # log_file_console = get_logger("FL_PIPELINE - Load - FC")
 
     else:
         print("Invalid parameters")
 
-    return log_file, log_console, log_file_console
+    # return log_file, log_console, log_file_console
+    return log_console
