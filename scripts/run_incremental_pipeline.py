@@ -1,15 +1,14 @@
 import os
+import schedule
+import time
 from datetime import datetime
-
 from dotenv import load_dotenv
 
 from data_pipeline.extract import extract
 from data_pipeline.transform import transform
 from data_pipeline.load import extract_to_staging, transform_to_prod
 
-
 load_dotenv()
-
 
 entrypoint = os.getenv("CHROMEBROWSER_URL_ENTRY")
 
@@ -40,9 +39,22 @@ def run_pipeline(entrypoint, is_incremental=True, to_skip=500):
 
     # Load to production table
     transform_to_prod(
-        DB_NAME=ui_DB_NAME_PRD, TBL_NAME=ui_TBL_NAME_PRD, data=data, is_incremental=True
+        DB_NAME=ui_DB_NAME_PRD,
+        TBL_NAME=ui_TBL_NAME_PRD,
+        data=data,
+        is_incremental=is_incremental,
     )
 
 
+# Schedule the pipeline to run every day at 12:01 AM
+schedule.every().day.at("00:01").do(
+    run_pipeline, entrypoint=entrypoint, is_incremental=True, to_skip=500
+)
+
 if __name__ == "__main__":
-    run_pipeline(entrypoint=entrypoint, is_incremental=True, to_skip=500)
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
+
+# if __name__ == "__main__":
+#     run_pipeline(entrypoint=entrypoint, is_incremental=True, to_skip=500)
