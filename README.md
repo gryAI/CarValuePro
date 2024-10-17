@@ -1,7 +1,28 @@
-### Introduction
-> Insert introduction here
+***
+## Introduction <br>
 
-### Project Setup
+The CarValuePro project focuses on predicting the market value of pre-owned vehicles in the Philippines. It aims to offer sellers a suggested price for their vehicles and provide buyers with a benchmark to help them compare the prices of vehicles they are considering. <br> <br>
+
+![image](https://github.com/user-attachments/assets/31ee6e2b-d70c-4e87-90cd-0da0804a045e)
+
+
+To accomplish this, the following project components are involved:
+- Data Pipeline Development and Deployment
+  - Extraction (Web Scraping)
+  - Transformation
+  - Loading (Initial Full Load and Daily Incremental Load)
+- Model Development
+- Web App Development
+- Model Deployment
+- Model Monitoring
+
+***
+
+## Project Details
+
+To replicate this project, you can follow the steps outlined below. <br> For a more detailed documentation, please check this Project's Wiki Page _(still in development)_.
+
+### Environment Setup
 1. Clone this repository
 ```
 git clone https://github.com/gryAI/CarValuePro
@@ -25,8 +46,14 @@ source venv/Scripts/activate
 pip install -r requirements.txt
 ```
 
-### Run the Pipeline Locally
-- Run specific modules from `src`
+### Local Module Execution
+You can choose to run the project locally by following these steps. This approach is suitable if you only intend to extract data from the website once and are not concerned with subsequent postings.
+- Run orchestrators from `scripts`
+```
+python scripts/run_full_pipeline.py
+```
+
+- Notes on how to run specific modules from `src`
 ```
 # Run from project root directory
 python -m src.data_pipeline.full_pipeline.extract
@@ -35,16 +62,16 @@ python -m src.data_pipeline.full_pipeline.extract
 cd src
 python -m data_pipeline.full_pipeline.extract
 ```
-- Run orchestrators from `scripts`
-```
-python scripts/run_full_pipeline.py
-```
 
-### Deploy the Pipeline in Render
+
+### Dockerization and Deployment
+If you wish to extract subsequent postings on a daily basis, I recommend following these steps to deploy the pipeline, ensuring that the scheduled tasks run continuously.
 - Dockerize the pipeline <br>
 - Deploy the pipeline as a Background Worker in Render
 
-### Project Structure
+***
+
+## Project Structure
 
 ```plaintext
 CarValueProRepo/
