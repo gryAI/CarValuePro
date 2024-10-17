@@ -37,10 +37,8 @@ python scripts/run_full_pipeline.py
 
 ### Deploy the Pipeline in Render
 - Dockerize the pipeline <br>
-> Refer to this [wiki page](https://github.com/gryAI/CarValuePro/wiki/Docker-Run) for more details
-
 - Deploy the pipeline as a Background Worker in Render
-> Refer to this [wiki page](https://github.com/gryAI/CarValuePro/wiki/3.-Deploy-as-a-CRON-Job-in-Render) for more details
+
 ### Project Structure
 
 ```plaintext
