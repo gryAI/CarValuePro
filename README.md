@@ -2,20 +2,25 @@
 > Insert introduction here
 
 ### Project Setup
-1. Create a virtual environment <br>
+1. Clone this repository
+```
+git clone https://github.com/gryAI/CarValuePro
+```
+   
+2. Create a virtual environment <br>
 ```
 pip install pyenv
 pip install virtualenv
 ```
-2. Add `PYTHONPATH` in the `venv/Scripts/activate` file
+3. Add `PYTHONPATH` in the `venv/Scripts/activate` file
 ```
 echo 'export PYTHONPATH="/path/to/your/src"' >> path/to/your/venv/Scripts/activate
 ```
-3. Activate the virtual environment <br>
+4. Activate the virtual environment <br>
 ```
 source venv/Scripts/activate
 ```
-4. Install dependencies
+5. Install dependencies
 ```
 pip install -r requirements.txt
 ```
