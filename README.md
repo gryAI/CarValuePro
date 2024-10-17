@@ -20,7 +20,7 @@ source venv/Scripts/activate
 pip install -r requirements.txt
 ```
 
-### Run the Application
+### Run the Pipeline Locally
 - Run specific modules from `src`
 ```
 # Run from project root directory
@@ -35,6 +35,12 @@ python -m data_pipeline.full_pipeline.extract
 python scripts/run_full_pipeline.py
 ```
 
+### Deploy the Pipeline in Render
+- Dockerize the pipeline <br>
+> Refer to this [wiki page](https://github.com/gryAI/CarValuePro/wiki/Docker-Run) for more details
+
+- Deploy the pipeline as a Background Worker in Render
+> Refer to this [wiki page](https://github.com/gryAI/CarValuePro/wiki/3.-Deploy-as-a-CRON-Job-in-Render) for more details
 ### Project Structure
 
 ```plaintext
