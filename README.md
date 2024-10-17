@@ -1,8 +1,10 @@
 ***
 ## Introduction <br>
 
-The CarValuePro project focuses on predicting the market value of pre-owned vehicles in the Philippines. It aims to offer sellers a suggested price for their vehicles and provide buyers with a benchmark to help them compare the prices of vehicles they are considering. <br> <br>
-
+The CarValuePro project focuses on developing a Machine Learning model to predict the market value of pre-owned vehicles in the Philippines. It aims to offer sellers a suggested price for their vehicles and provide buyers with a benchmark to help them compare the prices of vehicles they are considering. 
+<br><br>
+To ensure the model's relevance and accuracy, the data used in this project is sourced from real-world, updated information reflecting current market trends in the Philippines. The dataset encompasses a wide range of variables, including vehicle make, model, year, mileage, and condition, enabling the model to capture the nuances of the automotive market effectively.
+<br> <br>
 ![image](https://github.com/user-attachments/assets/31ee6e2b-d70c-4e87-90cd-0da0804a045e)
 
 
