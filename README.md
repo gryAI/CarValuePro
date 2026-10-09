@@ -14,6 +14,10 @@ To accomplish this, the following project components are involved:
   - Transformation
   - Loading (Initial Full Load and Daily Incremental Load)
 - Model Development
+  - Linear Regression
+  - XGBoost
+  - RandomForest
+  - Neural Networks   
 - Web App Development
 - Model Deployment
 - Model Monitoring
